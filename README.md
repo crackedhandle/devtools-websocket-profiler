@@ -10,6 +10,17 @@ This project explores how WebSocket frame-level data can be captured, structured
 - Latency tracking
 - Structured JSON event emission (VM Service-style)
 - CLI-based real-time interaction
+- 
+- ## Potential DevTools Integration
+
+The emitted events can map naturally into the DevTools Network panel:
+
+- Each WebSocket connection can be represented as a parent row
+- Individual frames (send/receive) can be displayed as child entries
+- Latency and payload size can be surfaced as columns
+- Frame-level details (type, timestamp) can be shown in the details pane
+
+This aligns with how HTTP requests are currently structured in DevTools.
 
 ## Architecture
 App → ProfileableWebSocket → Event Model → JSON Events → Output
@@ -24,3 +35,5 @@ This prototype simulates how WebSocket traffic could be surfaced through structu
 - Integration with Dart VM Service
 - DevTools Network panel support
 - gRPC traffic support
+
+- 
