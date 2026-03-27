@@ -1,14 +1,14 @@
 import 'dart:io';
-import 'socket_event.dart';
+import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
+import 'socket_event.dart';
 
 class ProfileableWebSocket {
   final WebSocket _socket;
   final List<SocketEvent> _events = [];
-
   int _counter = 0;
   final Map<String, DateTime> _pending = {};
-
   final bool enableLogging;
 
   ProfileableWebSocket(this._socket, {this.enableLogging = true});
@@ -17,57 +17,67 @@ class ProfileableWebSocket {
 
   void send(dynamic data) {
     final id = (_counter++).toString();
-
     _pending[id] = DateTime.now();
-
+    final isBinary = data is List;
     final event = SocketEvent(
       id: id,
       timestamp: DateTime.now(),
       direction: "out",
-      type: data is String ? "text" : "binary",
-      size: data is String ? data.length : (data as List).length,
+      type: isBinary ? "binary" : "text",
+      size: isBinary ? (data as List).length : (data as String).length,
     );
-
     _events.add(event);
-
-    if (enableLogging) {
-      print("\n[VM EVENT]");
-      print(jsonEncode(event.toJson()));
-    }
-
-    _socket.add("$id|$data");
+   if (enableLogging) {
+  print("\n[VM EVENT]");
+  print(jsonEncode(event.toJson()));
+  Timeline.instantSync('WebSocket Frame', arguments: event.toJson());
+}
+    _socket.add(isBinary ? data : "$id|$data");
   }
 
-  void listen(void Function(dynamic) onData) {
-    _socket.listen((data) {
-      final parts = data.toString().split("|");
-      final id = parts.first;
-      final actualData = parts.sublist(1).join("|");
+  void listen(
+    void Function(dynamic)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    _socket.listen(
+      (data) {
+        final isBinary = data is List;
+        String id = "";
+        dynamic actualData = data;
 
-      final sentTime = _pending[id];
-      final latency = sentTime != null
-          ? DateTime.now().difference(sentTime).inMilliseconds
-          : null;
+        if (!isBinary) {
+          final parts = data.toString().split("|");
+          id = parts.first;
+          actualData = parts.sublist(1).join("|");
+        }
 
-      _pending.remove(id);
+        final sentTime = _pending[id];
+        final latency = sentTime != null
+            ? DateTime.now().difference(sentTime).inMilliseconds
+            : null;
+        _pending.remove(id);
 
-      final event = SocketEvent(
-        id: id,
-        timestamp: DateTime.now(),
-        direction: "in",
-        type: "text",
-        size: actualData.length,
-        latencyMs: latency,
-      );
-
-      _events.add(event);
-
-      if (enableLogging) {
-        print("\n[VM EVENT]");
-        print(jsonEncode(event.toJson()));
-      }
-
-      onData(actualData);
-    });
+        final event = SocketEvent(
+          id: id,
+          timestamp: DateTime.now(),
+          direction: "in",
+          type: isBinary ? "binary" : "text",
+          size: isBinary ? (data as List).length : actualData.toString().length,
+          latencyMs: latency,
+        );
+        _events.add(event);
+        if (enableLogging) {
+  print("\n[VM EVENT]");
+  print(jsonEncode(event.toJson()));
+  Timeline.instantSync('WebSocket Frame', arguments: event.toJson());
+}
+        onData?.call(actualData);
+      },
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
   }
 }
