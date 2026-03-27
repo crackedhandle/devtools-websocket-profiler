@@ -9,7 +9,9 @@ class ProfileableWebSocket {
   int _counter = 0;
   final Map<String, DateTime> _pending = {};
 
-  ProfileableWebSocket(this._socket);
+  final bool enableLogging;
+
+  ProfileableWebSocket(this._socket, {this.enableLogging = true});
 
   List<SocketEvent> get events => _events;
 
@@ -27,8 +29,12 @@ class ProfileableWebSocket {
     );
 
     _events.add(event);
-    print("\n[VM EVENT]");
-    print(jsonEncode(event.toJson()));
+
+    if (enableLogging) {
+      print("\n[VM EVENT]");
+      print(jsonEncode(event.toJson()));
+    }
+
     _socket.add("$id|$data");
   }
 
@@ -43,6 +49,8 @@ class ProfileableWebSocket {
           ? DateTime.now().difference(sentTime).inMilliseconds
           : null;
 
+      _pending.remove(id);
+
       final event = SocketEvent(
         id: id,
         timestamp: DateTime.now(),
@@ -53,8 +61,11 @@ class ProfileableWebSocket {
       );
 
       _events.add(event);
-      print("\n[VM EVENT]");
-      print(jsonEncode(event.toJson()));
+
+      if (enableLogging) {
+        print("\n[VM EVENT]");
+        print(jsonEncode(event.toJson()));
+      }
 
       onData(actualData);
     });
