@@ -25,7 +25,27 @@ The emitted events can map naturally into the DevTools Network panel:
 This aligns with how HTTP requests are currently structured in DevTools.
 
 ## Architecture
-App → ProfileableWebSocket (wrapper) → Event Model (SocketEvent) → Structured JSON Events (VM-style)→ Consumer (CLI / DevTools)
+  Application Code
+      │
+      ▼
+ProfilingWebSocket (dart:io wrapper)
+      │
+      ▼
+Frame Events (timestamp, direction, size, type, latency)
+      │
+      ▼
+Timeline / Event Stream (dart:developer)
+      │
+      ▼
+Dart VM Service (profiling APIs)
+      │
+      ▼
+DevTools Network Panel
+      │
+      ▼
+UI Representation (connections + frames)
+
+This flow mirrors how HTTP profiling is currently handled in DevTools, making WebSocket support a natural extension rather than a separate system.
 
 ## Sample Output
 <img width="1349" height="220" alt="image" src="https://github.com/user-attachments/assets/cc640737-b99d-4ce2-9427-48bd43836377" />
@@ -82,9 +102,13 @@ This follows a structure similar to HTTP request visualization in DevTools.
 
 ## Relation to Existing DevTools Architecture
 
-Instead of introducing a separate system, this approach can integrate with the existing `http_profile` pipeline by extending it to support WebSocket frame events.
+## Integration with Existing Profiling Pipeline
 
-This keeps the system consistent and avoids fragmentation.
+Instead of introducing a separate system, WebSocket events can be integrated into the existing `http_profile` pipeline used by DevTools. 
+
+At the dart:io level, frame-level metadata can be captured and emitted as timeline events. These events can then be surfaced through the Dart VM Service using an extended profiling API, similar to how HTTP requests are currently exposed. 
+
+On the DevTools side, WebSocket frames can be grouped under a connection and displayed alongside HTTP traffic, reusing the existing Network panel infrastructure. This approach ensures consistency, minimizes architectural changes, and allows WebSocket support to evolve naturally within the current profiling system.
 
 ---
 
