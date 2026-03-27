@@ -135,10 +135,17 @@ All tests use real WebSocket connections to ensure correctness in async environm
 ## Demo
 
 Run the server:
-dart run bin/server.dart
+dart run bin/server.dart 
+
+WebSocket server running on ws://127.0.0.1:8081
+
 
 Run the CLI:
 dart run bin/cli.dart
+<img width="1467" height="528" alt="image" src="https://github.com/user-attachments/assets/c367fffe-5148-4ccf-b70d-8f050a4ebfea" />
+<img width="1462" height="579" alt="image" src="https://github.com/user-attachments/assets/8a7857cd-d4a9-4711-a79c-dbd188dc9d70" />
+
+
 
 
 
