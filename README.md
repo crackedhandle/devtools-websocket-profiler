@@ -24,26 +24,33 @@ The emitted events can map naturally into the DevTools Network panel:
 
 This aligns with how HTTP requests are currently structured in DevTools.
 
-## Architecture
-  Application Code
-      │
-      ▼
-ProfilingWebSocket (dart:io wrapper)
-      │
-      ▼
-Frame Events (timestamp, direction, size, type, latency)
-      │
-      ▼
-Timeline / Event Stream (dart:developer)
-      │
-      ▼
-Dart VM Service (profiling APIs)
-      │
-      ▼
+ ## Architecture Overview
+```
+Application Code
+        │
+        ▼
+   Profiling WebSocket
+   (dart:io wrapper)
+        │
+        ▼
+Frame Events
+(timestamp, direction, size, type, latency)
+        │
+        ▼
+Timeline / Event Stream
+(dart:developer)
+        │
+        ▼
+Dart VM Service
+(profiling APIs)
+        │
+        ▼
 DevTools Network Panel
-      │
-      ▼
-UI Representation (connections + frames)
+        │
+        ▼
+UI Representation
+(connections + frames)
+```
 
 This flow mirrors how HTTP profiling is currently handled in DevTools, making WebSocket support a natural extension rather than a separate system.
 
