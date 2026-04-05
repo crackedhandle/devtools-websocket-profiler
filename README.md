@@ -62,7 +62,7 @@ This flow mirrors how HTTP profiling is currently handled in DevTools, making We
 
 ## Design Approach
 
-### Layer 1 — Instrumentation (dart:io level)
+### Layer 1 - Instrumentation (dart:io level)
 A wrapper (`ProfileableWebSocket`) intercepts:
 - `add()` → outgoing frames
 - `listen()` → incoming frames
@@ -76,7 +76,7 @@ Each frame records:
 
 ---
 
-### Layer 2 — Event Model & VM Service Alignment
+### Layer 2 - Event Model & VM Service Alignment
 Events are structured as JSON to resemble how data is typically exposed via the Dart VM Service.
 
 This enables:
@@ -87,7 +87,7 @@ The prototype focuses on validating this event model before moving to SDK-level 
 
 ---
 
-### Layer 3 — DevTools Integration (Conceptual)
+### Layer 3 - DevTools Integration (Conceptual)
 The emitted events can map naturally into the DevTools Network panel:
 
 - Each WebSocket connection can appear as a parent row
