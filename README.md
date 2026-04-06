@@ -1,5 +1,9 @@
 # WebSocket Profiling Prototype for Flutter DevTools
 
+![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)
+![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)
+![GSoC 2026](https://img.shields.io/badge/GSoC-2026-orange?style=for-the-badge)
+
 ## Overview
 Flutter DevTools currently does not support WebSocket traffic inspection.  
 This project explores how WebSocket frame-level data can be captured, structured, and exposed in a way compatible with DevTools.
@@ -54,7 +58,9 @@ UI Representation
 
 This flow mirrors how HTTP profiling is currently handled in DevTools, making WebSocket support a natural extension rather than a separate system.
 
-## Sample Output
+
+## Sample Output:
+
 <img width="1349" height="220" alt="image" src="https://github.com/user-attachments/assets/cc640737-b99d-4ce2-9427-48bd43836377" />
 
 
@@ -107,6 +113,20 @@ This follows a structure similar to HTTP request visualization in DevTools.
 
 ---
 
+## Technical Challenges Addressed
+
+### Stream Integrity
+One of the primary hurdles in WebSocket profiling is intercepting data without "consuming" the stream, which would break the application's original logic. 
+* **Solution:** Implemented a non-destructive `StreamTransformer`. This allows the profiler to "tap" into the data flow, capturing frame metadata while ensuring the original `Stream` remains intact and reactive for the end-user.
+
+### Buffer Management
+High-frequency WebSocket traffic can quickly lead to memory exhaustion if every frame is stored indefinitely.
+* **Solution:** Developed a **Circular FIFO (First-In-First-Out) Buffer**. This mechanism enforces a configurable memory cap (e.g., 500 frames), automatically discarding the oldest data as new frames arrive. This ensures the profiler remains "memory-safe" even during high-throughput stress tests.
+
+### Latency Logic (RTT)
+Standard socket monitoring often misses the "developer's perspective" of request-response timing.
+* **Solution:** Created a correlation engine that maps outbound request IDs to inbound response IDs. By calculating the delta between the `add()` timestamp and the corresponding `listen()` event, the profiler provides a real-time **Round Trip Time (RTT)** estimation for every message exchange.
+
 ## Relation to Existing DevTools Architecture
 
 ## Integration with Existing Profiling Pipeline
@@ -135,13 +155,22 @@ All tests use real WebSocket connections to ensure correctness in async environm
 ## Demo
 
 Run the server:
-dart run bin/server.dart 
+* **Terminal 1 (Mock Server):**
+```
+dart run bin/server.dart
+```
 
-WebSocket server running on ws://127.0.0.1:8081
+WebSocket server running on 
+```
+ws://127.0.0.1:8081
+```
 
 
 Run the CLI:
+* **Terminal 2 (Profiler CLI):**
+```
 dart run bin/cli.dart
+```
 <img width="1467" height="528" alt="image" src="https://github.com/user-attachments/assets/c367fffe-5148-4ccf-b70d-8f050a4ebfea" />
 <img width="1462" height="579" alt="image" src="https://github.com/user-attachments/assets/8a7857cd-d4a9-4711-a79c-dbd188dc9d70" />
 
