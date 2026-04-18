@@ -83,13 +83,24 @@ Each frame records:
 ---
 
 ### Layer 2 - Event Model & VM Service Alignment
-Events are structured as JSON to resemble how data is typically exposed via the Dart VM Service.
+
+Events are emitted directly to the Dart VM timeline using:
+
+```dart
+Timeline.instantSync('WebSocket Frame', arguments: event.toJson());
+```
+
+This is the same mechanism used by Flutter's HTTP profiling pipeline,
+making WebSocket events immediately consumable by DevTools without
+any additional translation layer.
 
 This enables:
-- Easy integration into existing profiling pipelines
+- Direct integration into the existing VM timeline infrastructure
 - Compatibility with DevTools data consumption patterns
+- A natural extension path to SDK-level instrumentation
 
-The prototype focuses on validating this event model before moving to SDK-level instrumentation.
+The prototype validates this event model at the user-space level
+before moving to dart:io / VM Service-level instrumentation.
 
 ---
 
